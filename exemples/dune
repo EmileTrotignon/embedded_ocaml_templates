@@ -1,0 +1,10 @@
+(executable
+(name main)
+(libraries core)
+ (preprocess
+  (pps sedlex.ppx ppx_jane))
+  (flags :standard -w +39))
+
+(rule
+ (target templates.ml)
+ (action (run eml_compiler templates)))

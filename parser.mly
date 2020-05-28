@@ -9,6 +9,7 @@
 %start <Template.t> template
 %%
 
+
 template_arguments :
 | LeftParArgs ; args = Text ; RightPar { args }
 
@@ -21,3 +22,4 @@ rev_template :
 
 template:
   | args = template_arguments; t = rev_template ; EOF {(args, List.rev t)}
+  | t = rev_template ; EOF {("", List.rev t)}
