@@ -1,5 +1,5 @@
 (executable
-(name main)
+(name exemple)
 (libraries core)
  (preprocess
   (pps sedlex.ppx ppx_jane))
