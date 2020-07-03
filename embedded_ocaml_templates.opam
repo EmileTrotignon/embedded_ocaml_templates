@@ -14,7 +14,7 @@ depends: [
     "ocaml" {>= "4.07.0"}
     "dune" {>= "2.5.0"} 
     "sedlex" 
-    "core" {>= "v0.2"}
+    "core" {>= "v0.12"}
     "uutf" 
     "menhir" 
     "ppxlib" 
@@ -25,9 +25,9 @@ build: [
 ]
 url {
   src:
-    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.1.4.tar.gz"
+    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.2.tar.gz"
   checksum: [
-    "md5=ec80bbb37b78dff0a4df518380ce183c"
-    "sha512=d20c29e90ef2f33556029bdec76a36a44238f669fa4472ab07ffc3637b5c3e41d4bcf85908d79c53117aef0ee8cf7bfc216592f39fc4c52775ca99a39e196f98"
+    "md5=8a7189c85de9edc4f643e8a22b100e9c"
+    "sha512=18184036d47791139fafb97790ae7daf9560f416ad6ea38e267188ed80a6443aa9457d8b5ead753f68b08997189c61b02cc8d04c550d8ce0e5df6202b0c9bef9"
   ]
 }
