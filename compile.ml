@@ -3,6 +3,14 @@ open Template
 
 type file = File of string | Directory of (string * file array)
 
+let rec print_file file =
+  match file with
+  | File f -> printf "File %s\n" f
+  | Directory (s, fa) ->
+      printf "File %s (\n" s;
+      Array.iter fa ~f:print_file;
+      print_endline ")"
+
 let path_readdir dirname =
   Array.map ~f:(Filename.concat dirname) (Sys.readdir dirname)
 
@@ -14,17 +22,21 @@ let rec read_file_or_directory ?(filter = fun _ -> true) filename =
           Array.map
             ~f:(fun file ->
               match file with
-              | File name -> File (Filename.concat filename name)
-              | Directory (name, files) ->
-                  Directory (Filename.concat filename name, files))
+              | File name -> File name
+              | Directory (name, files) -> Directory (name, files))
             (Array.filter
                ~f:(fun file ->
                  match file with File s -> filter s | Directory _ -> true)
                (Array.map
                   ~f:(read_file_or_directory ~filter)
-                  (Sys.readdir filename))) )
-  | `No -> File filename
-  | `Unknown -> failwith "Unknown file"
+                  (Array.map ~f:(Filename.concat filename)
+                     (Sys.readdir filename)))) )
+  | `No -> (
+      match Sys.file_exists filename with
+      | `Yes -> File filename
+      | `No -> failwith (sprintf "Unknown file %s" filename)
+      | `Unknown -> failwith (sprintf "Unknown file %s" filename) )
+  | `Unknown -> failwith (sprintf "Unknown file %s" filename)
 
 let compile name header (args, elements) =
   let codes =
@@ -72,13 +84,10 @@ let compile_folder folder_name =
         | Some template -> compile_to_function function_name template
         | None -> failwith "Syntax error" )
     | Directory (name, files) ->
-        let module_name_bytes =
-          Bytes.of_string (List.last_exn (Filename.parts name))
+        let module_name =
+          String.capitalize (List.last_exn (Filename.parts name))
         in
-        Bytes.set module_name_bytes 0
-          (Char.uppercase (Bytes.get module_name_bytes 0));
-        let module_name = Bytes.to_string module_name_bytes in
-        sprintf "module %s = struct\n" module_name
+        sprintf " module %s = struct\n" module_name
         ^ String.concat_array (Array.map ~f:aux files)
         ^ "\nend\n"
   in

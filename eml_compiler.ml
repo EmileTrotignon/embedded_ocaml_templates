@@ -10,4 +10,4 @@ let command =
     (Command.Param.map filename_param ~f:(fun filename () ->
          Compile.compile_folder filename))
 
-let () = Command.run ~version:"1.0" ~build_info:"RWO" command
+let () = Command.run ~version:"0.2" ~build_info:"RWO" command
