@@ -2,7 +2,7 @@
 (name exemple)
 (libraries core)
  (preprocess
-  (pps sedlex.ppx ppx_jane))
+  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx ppx_jane))
   (flags :standard -w +39))
 
 (rule
