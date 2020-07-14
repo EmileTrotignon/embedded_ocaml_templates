@@ -1,5 +1,5 @@
 opam-version: "2.0"
-version: "0.2"
+version: "0.3"
 synopsis: "EML is a simple templating language that lets you generate text with plain OCaml"
 description: """
 EML is a simple templating language that lets you generate text with plain OCaml
@@ -26,9 +26,9 @@ build: [
 ]
 url {
   src:
-    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.2.tar.gz"
+    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.3.tar.gz"
   checksum: [
-    "md5=8a7189c85de9edc4f643e8a22b100e9c"
-    "sha512=18184036d47791139fafb97790ae7daf9560f416ad6ea38e267188ed80a6443aa9457d8b5ead753f68b08997189c61b02cc8d04c550d8ce0e5df6202b0c9bef9"
+    "md5=74d087a6bf95b95e64460a327dfc164f"
+    "sha512=cd6a0b73cbe7d82b8d24f91114b34c6f283581d789c3f81701855e0d9edcb77f9afef8faef9d6d87d7aa3839ad417ce21fa0927c3c5a7a4917c9ec909414e2d1"
   ]
 }
