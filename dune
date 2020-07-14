@@ -1,8 +1,0 @@
-(executable
-(name eml_compiler)
-(public_name eml_compiler)
-(libraries sedlex core uutf menhirLib ppxlib containers)
- (preprocess
-  (pps sedlex.ppx ppx_jane))
-  (flags :standard -w +39))
-(menhir  (flags --table --canonical) (modules parser))
