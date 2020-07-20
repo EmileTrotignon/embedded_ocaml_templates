@@ -1,4 +1,3 @@
-
 (* <%# firstname lastname email birthdate phonenumber formations experiences %>*)
 (* (date_start, date_end, diploma, school) *)
 (* (date, title, company, location, description) *)
