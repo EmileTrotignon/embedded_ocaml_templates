@@ -1,4 +1,3 @@
-
 %token RightPar
 %token LeftPar
 %token LeftParOutput

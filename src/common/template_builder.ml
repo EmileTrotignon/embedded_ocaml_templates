@@ -5,7 +5,7 @@ module S = MenhirLib.General
 let pp_pos out { Ppxlib.pos_lnum; pos_cnum; pos_bol; _ } =
   Format.fprintf out "line %d:%d" pos_lnum (pos_cnum - pos_bol)
 
-let handle_syntax_error lexbuf _ =
+let handle_syntax_error lexbuf =
   let message = "Syntax error" in
   Format.fprintf Format.err_formatter "%s %a\n%!" message pp_pos
     (fst @@ Sedlexing.lexing_positions lexbuf)
@@ -20,7 +20,7 @@ let rec loop next_token lexbuf (checkpoint : Template.t checkpoint) =
       let checkpoint = resume checkpoint in
       loop next_token lexbuf checkpoint
   | HandlingError _ ->
-      handle_syntax_error lexbuf checkpoint;
+      handle_syntax_error lexbuf;
       None
   | Accepted template -> Some template
   | Rejected ->

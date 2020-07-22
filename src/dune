@@ -4,7 +4,10 @@
   (name eml_compiler)
   (public_name eml_compiler)
   (libraries common_eml sedlex core uutf menhirLib ppxlib containers) 
-  (modules eml_compiler))
+  (modules eml_compiler)
+  (preprocess
+    (pps ppx_let))
+    (flags :standard -w +39))
 
 (library
   (name ppx_eml)
@@ -12,6 +15,9 @@
   (wrapped false)
   (kind ppx_rewriter)
   (libraries common_eml sedlex core uutf menhirLib ppxlib containers)
-  (modules ppx_eml))
+  (modules ppx_eml)
+  (preprocess
+    (pps ppx_let))
+    (flags :standard -w +39))
 
 
