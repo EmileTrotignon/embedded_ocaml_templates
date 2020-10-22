@@ -5,6 +5,7 @@ let john = "John"
 
 let john2 = [%eml "<%-john%>"]
 
+
 let () =
     (Templates.exemple john2 "Smith" "john.smith@johnsmith.com" "01/01/1970"
        "1234567890"

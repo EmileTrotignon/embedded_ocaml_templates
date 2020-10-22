@@ -1,24 +1,42 @@
+%{
+  let string_of_string_option o =
+    match o with
+    | Some s -> s
+    | None -> ""
+  let soso = string_of_string_option
+%}
+
 %token RightPar
-%token LeftPar
-%token LeftParOutput
-%token LeftParArgs
+%token LeftPar (* <% *)
+%token LeftParOutput (* <%- *)
+%token LeftParArgs (* <%# *)
 %token <string> Text
 %token EOF
 
 %start <Template.t> template
-%%
+%% 
 
+%inline text_of_left_par:
+| LeftPar       { "<%" }
+| LeftParOutput { "<%-" }
+| LeftParArgs   { "<%#" }
+
+code_item :
+| code = Text                 { code                         }
+| left_par=text_of_left_par 
+  code=ioption(Text) RightPar { left_par ^ soso code ^ "%>" } 
+
+code:
+| list=list(code_item) { String.concat "" list }
 
 template_arguments :
-| LeftParArgs ; args = Text ; RightPar { args }
+| LeftParArgs args=Text RightPar { args }
 
 
-rev_template :
- | (* nothing *) {[]}
- | t = rev_template ; LeftPar ; code = Text ; RightPar { Code code :: t}
- | t = rev_template ; LeftParOutput ; code = Text ; RightPar { Output_code code :: t}
- | t = rev_template ; text = Text { Template.Text text :: t}
+template_item :
+ | LeftPar code=code RightPar       { Code code          }
+ | LeftParOutput code=code RightPar { Output_code code   }
+ | text=Text                        { Template.Text text }
 
 template:
-  | args = template_arguments; t = rev_template ; EOF {(args, List.rev t)}
-  | t = rev_template ; EOF {("", List.rev t)}
+  | args=option(template_arguments) t=list(template_item) EOF { (soso args, t) }

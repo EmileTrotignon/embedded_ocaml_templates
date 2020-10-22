@@ -55,7 +55,7 @@ let compile ?(continuation_mode = false) ?(and_instead_of_let = false) name
       (args, elements)
 
 let compile_to_module ?(continuation_mode = false) template =
-  compile ~continuation_mode "render" "open Core" template
+  compile ~continuation_mode "render" "" template
 
 let compile_to_function ?(continuation_mode = false)
     ?(and_instead_of_let = false) name template =

@@ -1,5 +1,4 @@
 open Parser
-
 let get_text buffer first =
   let text = CCVector.of_array first in
   let rec aux () =

@@ -1,10 +1,12 @@
-(executable
-(name exemple)
-(libraries core)
- (preprocess
-  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx ppx_jane))
-  (flags :standard -w +39))
+;(executable
+; (name exemple)
+; (libraries core)
+; (modules templates)
+; (preprocess
+;  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx ppx_jane))
+; (flags :standard -w +39))
 
 (rule
  (target templates.ml)
- (action (run eml_compiler -continuation templates)))
+ (action
+  (run eml_compiler -continuation templates)))
