@@ -1,8 +1,12 @@
 (library
-    (name common_eml)
-    (public_name embedded_ocaml_templates.common_eml)
-    (libraries sedlex core uutf menhirLib ppxlib containers)
-    (preprocess
-        (pps sedlex.ppx ppx_jane))
-    (flags :standard -w +39))
-(menhir  (flags --table --canonical) (modules parser))
+ (name common_eml)
+ (public_name embedded_ocaml_templates.common_eml)
+ (libraries sedlex core uutf menhirLib ppxlib containers)
+ (inline_tests)
+ (preprocess
+  (pps sedlex.ppx ppx_jane ppx_deriving.show ppx_inline_test))
+ (flags :standard -w +39))
+
+(menhir
+ (flags --table --canonical)
+ (modules parser))

@@ -45,6 +45,12 @@ let rec read_file_or_directory ?(filter = fun _ -> true) ?(sorted = false)
   | `No -> (
       match Sys.file_exists filename with
       | `Yes -> File filename
-      | `No -> failwith (sprintf "Unknown file %s" filename)
-      | `Unknown -> failwith (sprintf "Unknown file %s" filename) )
-  | `Unknown -> failwith (sprintf "Unknown file %s" filename)
+      | `No ->
+          eprintf "Unknown file %s\n" filename;
+          exit 1
+      | `Unknown ->
+          eprintf "Unknown file %s\n" filename;
+          exit 1 )
+  | `Unknown ->
+      eprintf "Unknown file %s\n" filename;
+      exit 1

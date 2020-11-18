@@ -21,11 +21,11 @@
 \begin{document}
 	\makecvtitle
 	\section{Formation}
-	 <% List.iter formations ~f:(fun (date_start, date_end, diploma, school) ->%>
+	 <% List.iter (fun (date_start, date_end, diploma, school) ->%>
 		\cventry{ <%-date_start%> -- <%-date_end%>}{<%-diploma%>}{<%-school%>}{}{}{}
-	 <%) ;%>
+	 <%) formations ;%>
 	\section{Expérience}
-		 <% List.iter experiences ~f:(fun (date, title, company, location, description) ->%>
+		 <% List.iter  (fun (date, title, company, location, description) ->%>
 			\cventry{ <%-date%> }{ <%-title%> }{ <%-company%> }{ <%-location%> }{}{ <%-description%> }
-	 <%) ;%>
+	 <%) experiences ;%>
 \end{document}

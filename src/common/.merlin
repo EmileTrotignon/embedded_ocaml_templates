@@ -33,6 +33,7 @@ B /home/emile/.opam/4.11.1/lib/ppx_assert/runtime-lib
 B /home/emile/.opam/4.11.1/lib/ppx_bench/runtime-lib
 B /home/emile/.opam/4.11.1/lib/ppx_compare/runtime-lib
 B /home/emile/.opam/4.11.1/lib/ppx_derivers
+B /home/emile/.opam/4.11.1/lib/ppx_deriving/runtime
 B /home/emile/.opam/4.11.1/lib/ppx_enumerate/runtime-lib
 B /home/emile/.opam/4.11.1/lib/ppx_expect/collector
 B /home/emile/.opam/4.11.1/lib/ppx_expect/common
@@ -100,6 +101,7 @@ S /home/emile/.opam/4.11.1/lib/ppx_assert/runtime-lib
 S /home/emile/.opam/4.11.1/lib/ppx_bench/runtime-lib
 S /home/emile/.opam/4.11.1/lib/ppx_compare/runtime-lib
 S /home/emile/.opam/4.11.1/lib/ppx_derivers
+S /home/emile/.opam/4.11.1/lib/ppx_deriving/runtime
 S /home/emile/.opam/4.11.1/lib/ppx_enumerate/runtime-lib
 S /home/emile/.opam/4.11.1/lib/ppx_expect/collector
 S /home/emile/.opam/4.11.1/lib/ppx_expect/common
@@ -133,5 +135,5 @@ S /home/emile/.opam/4.11.1/lib/uchar
 S /home/emile/.opam/4.11.1/lib/uutf
 S /home/emile/.opam/4.11.1/lib/variantslib
 S .
-FLG -ppx '/home/emile/Projects/ocaml/embedded_ocaml_templates/_build/default/.ppx/36446c41dabc096b20b72af6d76ecf13/ppx.exe --as-ppx --cookie '\''library-name="common_eml"'\'''
+FLG -ppx '/home/emile/Projects/ocaml/embedded_ocaml_templates/_build/default/.ppx/5d960d24a81ed156a516edf5a06c9992/ppx.exe --as-ppx --cookie '\''inline_tests="enabled"'\'' --cookie '\''library-name="common_eml"'\'''
 FLG -open Common_eml -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -w +39

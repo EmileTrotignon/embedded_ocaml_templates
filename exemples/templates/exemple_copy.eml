@@ -21,7 +21,7 @@
 \begin{document}
 	\makecvtitle
 	\section{Formation}
-	 <% List.iter formations ~f:(fun (date_start, date_end, diploma, school) ->%>
-		\cventry{ <%-date_start%> -- <%-date_end%>}{<%-diploma%>}{<%-school%>}{}{}{}
-	 <%) ;%>
+	 <% List.iteri (fun i (date_start, date_end, diploma, school) ->%>
+		\cventry{ <%i- i %> <%-date_start%> -- <%-date_end%>}{<%-diploma%>}{<%-school%>}{}{}{}
+	 <%) formations ;%>
 \end{document}

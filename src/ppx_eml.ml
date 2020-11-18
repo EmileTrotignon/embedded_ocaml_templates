@@ -1,11 +1,12 @@
 open Ppxlib
-
 let name = "eml"
 
 let expand ~loc ~path:_ (s : string) =
   match Common_eml.Template_builder.of_string s with
-  | None -> failwith "EML syntax error"
-  | Some template ->
+  | Error lexbuf ->
+      Common_eml.Template_builder.handle_syntax_error lexbuf;
+      exit 1
+  | Template template ->
       let buffer =
         Lexing.from_string ~with_positions:false
           (Common_eml.Compile.compile_to_expr template)

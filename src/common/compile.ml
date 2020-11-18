@@ -2,7 +2,7 @@ open Core
 open Template
 open File_handling
 
-let compile_to_expr (args, elements) =
+let compile_to_expr ((args, elements): Template.t) =
   let codes = ref [] in
   let append e = codes := e :: !codes in
 
@@ -10,7 +10,7 @@ let compile_to_expr (args, elements) =
     append
       (sprintf
          {|
-        Core.(fun %s ->
+        Stdlib.(fun %s ->
           let ___elements = ref [] in
           let ___append e =
             ___elements := e :: !___elements
@@ -19,7 +19,7 @@ let compile_to_expr (args, elements) =
          args)
   else
     append
-      {| Core.(let ___elements = ref [] in
+      {| Stdlib.(let ___elements = ref [] in
           let ___append e =
             ___elements := e :: !___elements
           in |};
@@ -27,28 +27,38 @@ let compile_to_expr (args, elements) =
       match ele with
       | Text s -> append (sprintf {| ___append {___|%s|___} ;|} s)
       | Code s -> append s
-      | Output_code s -> append (sprintf {| ___append (%s) ;|} s));
+      | Output_code s -> append (sprintf {| ___append (%s) ;|} s)
+      | Output_format (format, code) ->
+          append
+            (sprintf {| ___append (Printf.sprintf {___|%%%s|___} %s) ; |}
+              format code));
   append {|
-  String.concat (List.rev !___elements) )
+  String.concat "" (List.rev !___elements) )
   |};
   String.concat (List.rev !codes)
 
-let compile_to_expr_continuation (args, elements) =
+let compile_to_expr_continuation ((args, elements):Template.t) =
   let codes = ref [] in
   let append e = codes := e :: !codes in
-  append (sprintf {|Core.(fun %s ___continuation ->|} args);
+  append (sprintf {|Stdlib.(fun %s ___continuation ->|} args);
   List.iter elements ~f:(fun ele ->
       match ele with
       | Text s -> append (sprintf {| ___continuation {___|%s|___} ; |} s)
       | Code s -> append s
-      | Output_code s -> append (sprintf {| ___continuation (%s) ; |} s));
+      | Output_code s -> append (sprintf {| ___continuation (%s) ; |} s)
+      | Output_format (format, code) ->
+          append
+            (sprintf {| ___continuation (Printf.sprintf {___|%%%s|___} %s) ; |}
+               format code));
   append {| ) |};
   String.concat (List.rev !codes)
 
 let compile ?(continuation_mode = false) ?(and_instead_of_let = false) name
     header (args, elements) =
-  sprintf {|%s
-            %s %s = |} header
+  sprintf
+    {|%s
+            %s %s = |}
+    header
     (if and_instead_of_let then "and" else {|let [@warning "-39"] rec|})
     name
   ^ (if continuation_mode then compile_to_expr_continuation else compile_to_expr)
@@ -73,7 +83,7 @@ let compile_folder ?(continuation_mode = false) folder_name =
         let name = Filename.chop_extension filename in
         let function_name = List.last_exn (Filename.parts name) in
         match Template_builder.of_filename filename with
-        | Some template ->
+        | Template template ->
             compile_to_function ~continuation_mode
               ~and_instead_of_let:
                 ( if not !first_file_seen_ref then (
@@ -81,7 +91,9 @@ let compile_folder ?(continuation_mode = false) folder_name =
                   false )
                 else true )
               function_name template
-        | None -> failwith "Syntax error" )
+        | Error lexbuf ->
+            Template_builder.handle_syntax_error lexbuf;
+            exit 1 )
     | Directory (name, files) ->
         let module_name =
           String.capitalize (List.last_exn (Filename.parts name))
@@ -96,14 +108,13 @@ let compile_folder ?(continuation_mode = false) folder_name =
       if Filename.check_suffix folder_name ".eml" then
         let name = Filename.chop_extension folder_name ^ ".ml" in
         match Template_builder.of_filename folder_name with
-        | Some template ->
+        | Template template ->
             Out_channel.write_all name
               ~data:(compile_to_module ~continuation_mode template)
-        | None -> ()
+        | Error lexbuf -> Template_builder.handle_syntax_error lexbuf
       else ()
   | Directory (_, files) ->
       let first_file_seen = ref false in
-
       let content =
         String.concat_array (Array.map ~f:(aux first_file_seen) files)
       in

@@ -3,7 +3,8 @@
 (* (date, title, company, location, description) *)
 let john = "John"
 
-let john2 = [%eml "<%-john%>"]
+let john2 = [%eml {|<%-john%>
+                    <_%i-23%>|}]
 
 
 let () =
