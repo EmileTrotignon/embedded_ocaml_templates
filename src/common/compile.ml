@@ -2,7 +2,7 @@ open Core
 open Template
 open File_handling
 
-let compile_to_expr ((args, elements): Template.t) =
+let compile_to_expr ((args, elements) : Template.t) =
   let codes = ref [] in
   let append e = codes := e :: !codes in
 
@@ -30,14 +30,14 @@ let compile_to_expr ((args, elements): Template.t) =
       | Output_code s -> append (sprintf {| ___append (%s) ;|} s)
       | Output_format (format, code) ->
           append
-            (sprintf {| ___append (Printf.sprintf {___|%%%s|___} %s) ; |}
-              format code));
+            (sprintf {| ___append (Printf.sprintf {___|%%%s|___} %s) ; |} format
+               code));
   append {|
   String.concat "" (List.rev !___elements) )
   |};
   String.concat (List.rev !codes)
 
-let compile_to_expr_continuation ((args, elements):Template.t) =
+let compile_to_expr_continuation ((args, elements) : Template.t) =
   let codes = ref [] in
   let append e = codes := e :: !codes in
   append (sprintf {|Stdlib.(fun %s ___continuation ->|} args);

@@ -1,23 +1,19 @@
-
-
 (executable
-  (name eml_compiler)
-  (public_name eml_compiler)
-  (libraries common_eml sedlex core uutf menhirLib ppxlib containers) 
-  (modules eml_compiler)
-  (preprocess
-    (pps ppx_let))
-    (flags :standard -w +39))
+ (name eml_compiler)
+ (public_name eml_compiler)
+ (libraries common_eml sedlex core uutf menhirLib ppxlib containers)
+ (modules eml_compiler)
+ (preprocess
+  (pps ppx_let))
+ (flags :standard -w +39))
 
 (library
-  (name ppx_eml)
-  (public_name embedded_ocaml_templates.ppx_eml)
-  (wrapped false)
-  (kind ppx_rewriter)
-  (libraries common_eml sedlex core uutf menhirLib ppxlib containers)
-  (modules ppx_eml)
-  (preprocess
-    (pps ppx_let))
-    (flags :standard -w +39))
-
-
+ (name ppx_eml)
+ (public_name embedded_ocaml_templates.ppx_eml)
+ (wrapped false)
+ (kind ppx_rewriter)
+ (libraries common_eml sedlex core uutf menhirLib ppxlib containers)
+ (modules ppx_eml)
+ (preprocess
+  (pps ppx_let))
+ (flags :standard -w +39))

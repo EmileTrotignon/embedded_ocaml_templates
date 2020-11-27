@@ -4,7 +4,6 @@ module S = MenhirLib.General
 
 type error_or_template = Error of Sedlexing.lexbuf | Template of Template.t
 
-
 let pp_pos out (pos_start, pos_end) =
   Ppxlib.(
     Format.fprintf out "from line %d:%d to line %d:%d in file %s"
@@ -52,5 +51,5 @@ let of_filename filename =
   let gen = Gen.of_array (Ustring.of_string @@ In_channel.read_all filename) in
   let buffer = Sedlexing.from_gen gen in
   Sedlexing.set_filename buffer filename;
-  
+
   of_lexing_buffer buffer

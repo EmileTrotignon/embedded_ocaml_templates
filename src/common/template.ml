@@ -80,7 +80,7 @@ let%test "no slurp" =
   let ast'' = t_of_t' ast' in
   ast'' = ast
 
-  let%test "slurp" =
+let%test "slurp" =
   let ast' =
     ( "",
       [

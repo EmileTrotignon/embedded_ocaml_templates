@@ -22,6 +22,29 @@ You are able to open parenthesis and close them in a subsequent tag.
 This tag expect an expression of type string and is going to be replaced by the value of the expression. 
 If this tag is inside a loop or an if statement, it's going to behave you would expect it to.
 
+This tag has a variant : 
+```
+<%d- ocaml expression here %>
+```
+
+Here you can use any "simple" printf format specifier, where simple is defined by the following regex :
+
+```ocaml
+let format_flag = [%sedlex.regexp? '#' | '0' | '-' | '+']
+
+let simple_format =
+  [%sedlex.regexp?
+    ( Opt format_flag,
+      ( 'd' | 'i' | 'u' | 'n' | 'l' | 'N' | 'L' | 'x' | 'o' | 'X' | 's' | 'c'
+      | 'S' | 'C' | 'f' | 'e' | 'E' | 'g' | 'G' | 'h' | 'H' | 'b' | 'B'
+      | ('l' | 'n' | 'L'), ('d' | 'i' | 'u' | 'x' | 'X' | 'o')
+      | 'a' | 't' ) )]
+```
+You can use more complicated printf format specifiers using the following syntax :
+```
+<%(d%)- ocaml expression here %>
+```
+
 There are some identifiers that you cannot use : "___append" and "___elements" are going to be variables in the generated code.
 "{___|" and "|___}" are used as string delimiters.
 Using them will not necessarily raise an error, however I cannot guarantee what will happen if you do. 
@@ -45,6 +68,6 @@ let john = [%eml "<%-name%>"]
 ```
 
 The ppx may be a bit slow at compile time, because I actually call the OCaml parser on generated code to build it. 
-This has the advantage to be most likely compatible with future versions of OCaml, but if someone would like to help me do that more cleanly I would appreciate the help. 
+This has the advantage to be most likely compatible with future versions of OCaml, but I think it may be better to do it with some more standard tools such as metaquot. 
 
 
