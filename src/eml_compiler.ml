@@ -1,21 +1,39 @@
-open Core
+let continuation_mode =
+  ref false
 
-let filename_param =
-  let open Command.Param in
-  anon ("filename" %: string)
+let filename =
+  ref None
 
-let continuation_param =
-  let open Command.Param in
-  flag "continuation" no_arg ~doc:"Enable continuation mode"
+let args = Arg.align [
+  "-continuation",
+    Arg.Set continuation_mode,
+    " Enable continuation mode";
+  "-build-info",
+    Arg.Unit (fun () -> print_endline "RWO"; exit 0),
+    " Print info about this build and exit";
+  "-version",
+    Arg.Unit (fun () -> print_endline "0.2"; exit 0),
+    " Print the version of this build and exit";
+]
 
-let command =
-  let open Command.Let_syntax in
-  Command.basic ~summary:"Generate an OCaml source file from a template"
-    ~readme:(fun () -> "More detailed information")
-    [%map_open
-      let continuation = continuation_param and filename = filename_param in
-      fun () ->
-        Common_eml.Compile.compile_folder ~continuation_mode:continuation
-          filename]
+let usage = {|Generate an OCaml source file from a template
 
-let () = Command.run ~version:"0.2" ~build_info:"RWO" command
+  eml_compiler FILENAME
+
+More detailed information
+
+=== flags ===
+|}
+
+let () =
+  Arg.parse args (fun s -> filename := Some s) usage;
+  let filename =
+    match !filename with
+    | Some s -> s
+    | None ->
+      prerr_endline "Missing required argument FILENAME";
+      prerr_endline "For usage, run eml_compiler -help";
+      exit 1
+  in
+  let continuation_mode = !continuation_mode in
+  Common_eml.Compile.compile_folder ~continuation_mode filename
