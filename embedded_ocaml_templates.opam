@@ -27,9 +27,9 @@ build: [
 ]
 url {
   src:
-    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.5.tar.gz"
+    "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.5.1.tar.gz"
   checksum: [
-    "md5=26460887be02f4d285c6a36dfcf303a4"
-    "sha512=5278de26aefdf3f3476528e2b73182732d93a4e3b7ed17d0e16e8dd67ed502a021fb450c6e6d140d3563053566925bcd1c9322067565111e5feba5d7e1853142"
+    "md5=540b7c3b5c7d5c21755556272b6ff5d7"
+    "sha512=0756d0a9a4ed247580b3e8818c8e5c53075ffe5604fe139ab30267309ab620fcfca5b0187427dc4bb27ec1ab6c538cc50fb139b5279de4a1774592f5d5af20d1"
   ]
 }
