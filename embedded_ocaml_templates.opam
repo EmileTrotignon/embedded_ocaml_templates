@@ -18,7 +18,8 @@ depends: [
     "uutf"
     "menhir"
     "ppxlib"
-    "containers"]
+    "containers"
+    "ppx_inline_test"]
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
