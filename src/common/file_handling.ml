@@ -1,20 +1,18 @@
-open Core
-
 type file = File of string | Directory of (string * file array)
 
 let sort_by_int array ~to_int =
-  Array.sort array ~compare:(fun a b -> compare (to_int a) (to_int b))
+  ArrayLabels.sort array ~cmp:(fun a b -> compare (to_int a) (to_int b))
 
 let rec print_file file =
   match file with
-  | File f -> printf "File %s\n" f
+  | File f -> Printf.printf "File %s\n" f
   | Directory (s, fa) ->
-      printf "File %s (\n" s;
-      Array.iter fa ~f:print_file;
+      Printf.printf "File %s (\n" s;
+      ArrayLabels.iter fa ~f:print_file;
       print_endline ")"
 
 let path_readdir dirname =
-  Array.map ~f:(Filename.concat dirname) (Sys.readdir dirname)
+  ArrayLabels.map ~f:(Filename.concat dirname) (Sys.readdir dirname)
 
 let rec read_file_or_directory ?(filter = fun _ -> true) ?(sorted = false)
     filename =
@@ -23,34 +21,28 @@ let rec read_file_or_directory ?(filter = fun _ -> true) ?(sorted = false)
         match f with Directory _ -> 0 | File _ -> 1)
   in
   match Sys.is_directory filename with
-  | `Yes ->
+  | true ->
       Directory
         ( filename,
           let files =
-            Array.map
+            ArrayLabels.map
               ~f:(fun file ->
                 match file with
                 | File name -> File name
                 | Directory (name, files) -> Directory (name, files))
-              (Array.filter
+              (CCArrayLabels.filter
                  ~f:(fun file ->
                    match file with File s -> filter s | Directory _ -> true)
-                 (Array.map
+                 (ArrayLabels.map
                     ~f:(read_file_or_directory ~filter ~sorted)
-                    (Array.map ~f:(Filename.concat filename)
+                    (ArrayLabels.map ~f:(Filename.concat filename)
                        (Sys.readdir filename))))
           in
           if sorted then directories_first_sort files;
           files )
-  | `No -> (
+  | false -> (
       match Sys.file_exists filename with
-      | `Yes -> File filename
-      | `No ->
-          eprintf "Unknown file %s\n" filename;
-          exit 1
-      | `Unknown ->
-          eprintf "Unknown file %s\n" filename;
+      | true -> File filename
+      | false ->
+          Printf.eprintf "Unknown file %s\n" filename;
           exit 1 )
-  | `Unknown ->
-      eprintf "Unknown file %s\n" filename;
-      exit 1
