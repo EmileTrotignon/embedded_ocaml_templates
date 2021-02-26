@@ -1,4 +1,3 @@
-open Core
 open Containers
 
 type t = Uchar.t array
@@ -21,7 +20,8 @@ let of_string string =
         CCVector.push buffer u;
         aux ()
     | `End -> ()
-    | `Malformed string -> failwith (sprintf "Malformed input : %s" string)
+    | `Malformed string ->
+        Printf.ksprintf failwith "Malformed input : %s" string
   in
   aux ();
   CCVector.to_array buffer

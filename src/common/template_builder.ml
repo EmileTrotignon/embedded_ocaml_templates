@@ -1,5 +1,4 @@
 open Parser.MenhirInterpreter
-open Core
 module S = MenhirLib.General
 
 type error_or_template = Error of Sedlexing.lexbuf | Template of Template.t
@@ -48,7 +47,9 @@ let of_string ?(filename = "") string =
   of_ustring ~filename (Ustring.of_string string)
 
 let of_filename filename =
-  let gen = Gen.of_array (Ustring.of_string @@ In_channel.read_all filename) in
+  let gen =
+    Gen.of_array (Ustring.of_string @@ (CCIO.with_in filename CCIO.read_all))
+  in
   let buffer = Sedlexing.from_gen gen in
   Sedlexing.set_filename buffer filename;
 

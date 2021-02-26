@@ -1,8 +1,7 @@
 (executable
  (name exemple)
- (libraries core)
  (preprocess
-  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx ppx_jane)))
+  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx)))
 
 (rule
  (target templates.ml)
