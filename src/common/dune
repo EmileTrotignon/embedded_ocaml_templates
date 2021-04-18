@@ -1,7 +1,7 @@
 (library
  (name common_eml)
  (public_name embedded_ocaml_templates.common_eml)
- (libraries sedlex uutf menhirLib ppxlib containers)
+ (libraries sedlex uutf menhirLib ppxlib containers pprint)
  (inline_tests)
  (preprocess
   (pps sedlex.ppx ppx_inline_test))
