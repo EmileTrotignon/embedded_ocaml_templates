@@ -21,18 +21,19 @@ unit, you should include the ";" yourself. You are able to open parenthesis and
 close them in a subsequent tag.
 
 ```eml
-<%- ocaml expression here %>
+<%= ocaml expression here %>
 ```
 
 This tag expect an expression of type string and is going to be replaced by the
-value of the expression. If this tag is inside a loop or an if statement, or any
-control structure, it's going to behave the way you would expect it to :
-outputting its content only if the branch is executed, with the right context.
+value of the expression, with HTML escaping.
+If this tag is inside a loop or an if statement, or any control structure, it's
+going to behave the way you would expect it to :
+outputting its content every time the branch is executed, with the right context.
 
 This tag has a variant :
 
 ```eml
-<%i- ocaml expression here %>
+<%i= ocaml expression here %>
 ```
 
 Here you can use any "simple" printf format specifier, where simple is defined
@@ -51,9 +52,15 @@ You can use more complicated printf format specifiers with format flags, width
 and precision using the following syntax :
 
 ```eml
-<%[i%]- ocaml expression here %>
+<%[i%]= ocaml expression here %>
 ```
 
+Every time `=` is used to mark an outputting tag, it can be replaced by `-` to
+disable HTML escaping.
+
+A slurp marker is also provided :
+`<_%` slurps whitespaces before it, and `%_>` after. It can be combined with
+output tags this way : `<_%=`.
 
 Identifiers prefixed with `__eml_` are reserved. This includes string delimiters
 `{__eml_|` and `|__eml_}`. Using them will not necessarily raise an error, but
@@ -93,7 +100,15 @@ But in my opinion it is more elegant to write :
 let user name age = [%eml "name:<%-name%>, age:<%i- age%>"]
 ```
 
+There is also this nice new syntax that available from OCaml 4.11 onward :
+
+```ocaml
+let user name age = {%eml|name:<%-name%>, age:<%i- age%>|}
+```
+
 The ppx may be a bit slow at compile time, because I actually call the OCaml
 parser on generated code to build it. This has the advantage to be most likely
 compatible with future versions of OCaml, but I think it may be better to do it
 with some more standard tools such as metaquot.
+
+Unfortunately, I have not managed to make the ppx positions correct.
