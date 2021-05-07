@@ -1,9 +1,12 @@
 (executable
  (name exemple)
  (preprocess
-  (pps embedded_ocaml_templates.ppx_eml sedlex.ppx)))
+  (pps embedded_ocaml_templates.ppx_eml)))
 
 (rule
+ (alias test)
  (target templates.ml)
+ (deps
+  (source_tree templates))
  (action
   (run eml_compiler -continuation templates)))

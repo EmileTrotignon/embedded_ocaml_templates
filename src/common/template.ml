@@ -1,17 +1,17 @@
 type elt =
   | Text of string
-  | Code of string
-  | Output of {code: string; escape: bool; format: string option}
+  | Code of Ocaml.Primitive.t
+  | Output of {code: Ocaml.Primitive.t; escape: bool; format: string option}
 
-type t = string * elt list
+type t = Ocaml.Primitive.t * elt list
 type tag_options = {slurp_before: bool; slurp_after: bool}
 
 type tag =
-  | Code of string
-  | Output of {code: string; escape: bool; format: string option}
+  | Code of Ocaml.Primitive.t
+  | Output of {code: Ocaml.Primitive.t; escape: bool; format: string option}
 
 type elt' = Text of string | Whitespace of string | Tag of tag_options * tag
-type t' = string * elt' list
+type t' = Ocaml.Primitive.t * elt' list
 
 let elt_of_tag (tag : tag) : elt =
   match tag with
@@ -38,15 +38,24 @@ let t_of_t' (args, elts) =
       (function
         | Tag (_, tag) -> elt_of_tag tag
         | Text s -> Text s
-        | Whitespace s -> Text s)
+        | Whitespace s -> Text s )
       elts' )
+
+module Prim = Ocaml.Primitive
 
 let text s : elt = Text s
 let text' s : elt' = Text s
 let code s : elt = Code s
 let code' s : tag = Code s
-let output ?(escape = true) ?format code : elt = Output {code; escape; format}
-let output' ?(escape = true) ?format code : tag = Output {code; escape; format}
+
+let output ?(escape = true) ?format code : elt =
+  let code = Prim.with_dummy_pos code in
+  Output {code; escape; format}
+
+let output' ?(escape = true) ?format code : tag =
+  let code = Prim.with_dummy_pos code in
+  Output {code; escape; format}
+
 let tag slurp_before tag slurp_after = Tag ({slurp_before; slurp_after}, tag)
 
 let%test "no slurp" =
@@ -75,3 +84,6 @@ let%test "slurp" =
         : elt list ) ) in
   let ast'' = t_of_t' ast' in
   ast'' = ast
+
+let output ?(escape = true) ?format code : elt = Output {code; escape; format}
+let output' ?(escape = true) ?format code : tag = Output {code; escape; format}

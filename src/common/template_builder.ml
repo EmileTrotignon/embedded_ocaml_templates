@@ -37,20 +37,19 @@ let of_lexing_buffer lexbuf =
   loop lexer lexbuf
     (Parser.Incremental.template (fst @@ Sedlexing.lexing_positions lexbuf))
 
-let of_ustring ?(filename = "") ustring =
+let of_ustring ?(startpos = Lexing.dummy_pos) ustring =
   of_lexing_buffer
     (let buffer = Sedlexing.from_uchar_array ustring in
-     Sedlexing.set_filename buffer filename;
+     Sedlexing.set_position buffer startpos ;
      buffer)
 
-let of_string ?(filename = "") string =
-  of_ustring ~filename (Ustring.of_string string)
+let of_string ?(startpos = Lexing.dummy_pos) string =
+  of_ustring ~startpos (Ustring.of_string string)
 
 let of_filename filename =
   let gen =
-    Gen.of_array (Ustring.of_string @@ (CCIO.with_in filename CCIO.read_all))
+    Gen.of_array (Ustring.of_string @@ CCIO.with_in filename CCIO.read_all)
   in
   let buffer = Sedlexing.from_gen gen in
-  Sedlexing.set_filename buffer filename;
-
+  Sedlexing.set_filename buffer filename ;
   of_lexing_buffer buffer

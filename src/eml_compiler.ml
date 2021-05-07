@@ -1,3 +1,5 @@
+open Common
+
 let continuation_mode = ref false
 let filename = ref None
 
@@ -31,4 +33,4 @@ let () =
         prerr_endline "For usage, run eml_compiler -help" ;
         exit 1 in
   let continuation_mode = !continuation_mode in
-  Common_eml.Compile.compile_folder ~continuation_mode filename
+  Compile.compile_folder ~continuation_mode filename

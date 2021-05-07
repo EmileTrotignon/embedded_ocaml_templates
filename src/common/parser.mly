@@ -5,7 +5,7 @@
   let string_of_string_option o =
     match o with
     | Some s -> s
-    | None -> ""
+    | None -> Ocaml.Primitive.with_dummy_pos ""
   let soso = string_of_string_option
 
 
@@ -17,12 +17,15 @@
 %token LParArgs (* <%# *)
 %token <string> Text
 %token <string> Whitespaces
-%token <bool> LParFormat (* <%( *) (* bool is slurp *)
-%token <bool> RParFormat (* %)- *) (* bool is escape *)
+%token <bool> LParFormat (* <%[ *) (* bool is slurp *)
+%token <bool> RParFormat (* %]- *) (* bool is escape *)
 %token EOF
 
 %start <Template.t> template
 %%
+
+%inline located(X):
+  x=X { Ocaml.Primitive.build x $startpos $endpos }
 
 %inline text_of_lpar:
 | slurp=LPar { if slurp then "<_%" else "<%"  }
@@ -36,7 +39,7 @@
 | slurp=LParFormat format=Text escape=RParFormat {
     let slurp = if slurp then "_" else "" in
     let escape = if escape then "=" else "-" in
-    "<" ^ slurp ^ "%(" ^ format ^ "%)" ^ escape }
+    "<" ^ slurp ^ "%[" ^ format ^ "%]" ^ escape }
 
 %inline text_of_rpar:
 | slurp = RPar { if slurp then "%_>" else "%>"}
@@ -52,26 +55,25 @@ code:
 | list=list(code_item) { String.concat "" list }
 
 %inline template_arguments :
-| LParArgs args=code RPar { args }
+| LParArgs args=located(code) RPar { args }
 
 
 template_item :
  | slurp_before=LPar
-   code=code
+   code=located(code)
    slurp_after=RPar {
      Tag( {slurp_before; slurp_after}, Code code )
    }
  | options=LParOutput
-   code=code
+   code=located(code)
    slurp_after=RPar {
      let {slurp; escape; format} = options in
-     let format = Option.map ((^) "%") format in
-     Tag( {slurp_before=slurp; slurp_after}, Output {code; format; escape} )
+     Tag ({slurp_before=slurp; slurp_after}, Output {code; format; escape})
    }
  | slurp_before=LParFormat
    format=Text
    escape=RParFormat
-   code=code
+   code=located(code)
    slurp_after=RPar {
      Tag( {slurp_before; slurp_after}
         , Template.output' ~escape ~format code )

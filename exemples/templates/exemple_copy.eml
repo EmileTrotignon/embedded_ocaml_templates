@@ -1,7 +1,7 @@
 <%# firstname lastname email birthdate phonenumber formations %>
 \documentclass[10pt, a4paper, roman, french]{moderncv}
-\moderncvstyle{classic}                             
-\moderncvcolor{purple}                              
+\moderncvstyle{classic}
+\moderncvcolor{purple}
 \usepackage[utf8]{inputenc}
 \usepackage[light]{CormorantGaramond}
 \usepackage[T1]{fontenc}
@@ -15,9 +15,9 @@
 %----------------------------------------------------------------------------------
 \firstname{ <%-firstname%> }
 \familyname{ <%-lastname%> }
-\mobile{<%- phonenumber%>}                          
+\mobile{<%- phonenumber%>}
 \extrainfo{Né le <%-birthdate%> }
-\email{ <%-email%> }                               
+\email{ <%-email%> }
 \begin{document}
 	\makecvtitle
 	\section{Formation}

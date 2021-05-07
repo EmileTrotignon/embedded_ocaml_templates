@@ -1,7 +1,7 @@
 (library
- (name common_eml)
- (public_name embedded_ocaml_templates.common_eml)
- (libraries sedlex uutf menhirLib ppxlib containers pprint)
+ (name common)
+ (package embedded_ocaml_templates)
+ (libraries sedlex uutf menhirLib ppxlib containers pprint ocaml)
  (inline_tests)
  (preprocess
   (pps sedlex.ppx ppx_inline_test))
