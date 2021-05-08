@@ -82,11 +82,6 @@ let token buffer =
   | "<" -> lpar buffer
   | "%>" -> RPar false
   | "%_>" -> RPar true
-  | "%]", output_marker ->
-      let matched = Ustring.to_string (Sedlexing.lexeme buffer) in
-      let output_marker = matched.[1] in
-      let escape = output_marker = '=' in
-      RParFormat escape
   | eof -> EOF
   | white_space ->
       Whitespaces
