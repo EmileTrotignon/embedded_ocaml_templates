@@ -1,5 +1,11 @@
 open Ppxlib
 
+(* Not present before 4.11 *)
+let set_position lexbuf position =
+  Lexing.(
+    lexbuf.lex_curr_p <- {position with pos_fname= lexbuf.lex_curr_p.pos_fname} ;
+    lexbuf.lex_abs_pos <- position.pos_cnum)
+
 let name = "eml"
 
 let expand ~loc ~path:_ (s : string) =
@@ -12,7 +18,7 @@ let expand ~loc ~path:_ (s : string) =
   | Template template ->
       let buffer =
         Lexing.from_string (Common.Compile.compile_to_string template) in
-      Lexing.set_position buffer loc.loc_start ;
+      set_position buffer loc.loc_start ;
       Parser.parse_expression Lexer.token buffer
 
 let ext =
