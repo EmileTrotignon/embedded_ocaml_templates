@@ -1,3 +1,4 @@
+module Parser_ = Parser
 open Ppxlib
 
 (* Not present before 4.11 *)
@@ -19,7 +20,8 @@ let expand ~loc ~path:_ (s : string) =
       let buffer =
         Lexing.from_string (Common.Compile.compile_to_string template) in
       set_position buffer loc.loc_start ;
-      Parser.parse_expression Lexer.token buffer
+      Parser_.parse_expression Lexer.token buffer
+      |> Selected_ast.Of_ocaml.copy_expression
 
 let ext =
   Extension.declare name Extension.Context.expression
