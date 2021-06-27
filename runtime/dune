@@ -1,0 +1,3 @@
+(library
+ (name EML_runtime)
+ (public_name embedded_ocaml_templates.EML_runtime))

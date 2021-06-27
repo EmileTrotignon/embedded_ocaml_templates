@@ -23,7 +23,8 @@ let complex_format_no_escape i = [%eml {|<%[d%]- i %>|}]
 let s' printer a = Printf.sprintf "%a" printer a
 
 let%test "simple" = simple "coucou" = "prefixcoucousuffix"
-let%test "simple escape" = simple {|&<>"'|} = "prefix&amp&lt&gt&quot&#x27suffix"
+
+let%test "simple escape" = simple {|&<>"'|} = "prefix&amp;&lt;&gt;&quot;&#x27;suffix"
 
 let%test "simple_no_escape" =
   simple_no_escape "coucou" = "prefixcoucousuffix"

@@ -1,5 +1,6 @@
 (library
  (name test)
  (inline_tests)
+ (libraries embedded_ocaml_templates.EML_runtime)
  (preprocess
   (pps ppx_inline_test embedded_ocaml_templates.ppx_eml)))

@@ -4,29 +4,20 @@ open Ocaml.Builder
 open Ocaml.Primitive
 
 let prefix s = "__eml_" ^ s
-let n_escape = prefix "escape"
+let e_escape = e_module_field ["EML_runtime"; "escape"]
 let n_buffer = prefix "buffer"
-let n_push = prefix "push"
 let n_continuation = prefix "continuation"
 let e_app_continuation e = e_app (e_var n_continuation) [e]
-let e_push e = e_app (e_var n_push) [e]
-let e_list_rev e = e_app (e_module_field ["List"; "rev"]) [e]
 
-let e_string_concat sep li =
-  e_app (e_module_field ["String"; "concat"]) [sep; li]
-
-let e_string_length e = e_app (e_module_field ["String"; "length"]) [e]
-let e_string_iter f s = e_app (e_module_field ["String"; "iter"]) [f; s]
+(** Takes an expression representing an integer [n] and allocate a buffer of size [n] *)
 let e_buffer_create e = e_app (e_module_field ["Buffer"; "create"]) [e]
 
+(** add_string b s appends the string s at the end of buffer b. *)
 let e_buffer_add_string buf s =
   e_app (e_module_field ["Buffer"; "add_string"]) [buf; s]
 
-let e_buffer_add_char buf c =
-  e_app (e_module_field ["Buffer"; "add_char"]) [buf; c]
-
 let e_buffer_contents buf = e_app (e_module_field ["Buffer"; "contents"]) [buf]
-let e_app_escape e = e_app (e_var n_escape) [e]
+let e_app_escape e = e_app e_escape [e]
 
 (* d, i: convert an integer argument to signed decimal.
    u, n, l, L, or N: convert an integer argument to unsigned decimal. Warning: n, l, L, and N are used for scanf, and should not be used for printf.
@@ -84,48 +75,24 @@ let _escape s =
       | '>' -> Buffer.add_string buffer "&gt;"
       | '"' -> Buffer.add_string buffer "&quot;"
       | '\'' -> Buffer.add_string buffer "&#x27;"
-      | c -> Buffer.add_char buffer c)
+      | c -> Buffer.add_char buffer c )
     s ;
   Buffer.contents buffer
-
-let eescape =
-  let ns = prefix "s" in
-  let nc = prefix "c" in
-  let e_add_string s = e_buffer_add_string (e_var n_buffer) (e_lit_string s) in
-  e_fun @@ [p_var ns]
-  ^-> e_let [p_var n_buffer ^= e_buffer_create (e_string_length (e_var ns))]
-  @@ e_sequence
-       [ e_string_iter
-           (e_function
-              [ p_char '&' ^-> e_add_string "&amp"
-              ; p_char '<' ^-> e_add_string "&lt"
-              ; p_char '>' ^-> e_add_string "&gt"
-              ; p_char '"' ^-> e_add_string "&quot"
-              ; p_char '\'' ^-> e_add_string "&#x27"
-              ; p_var nc ^-> e_buffer_add_char (e_var n_buffer) (e_var nc) ])
-           (e_var ns) ]
-  @@ e_buffer_contents (e_var n_buffer)
 
 let esprintf format args =
   e_app (e_module_field ["Printf"; "sprintf"]) (format :: args)
 
 let compile_to_expr ((args, elements) : Template.t) : Ocaml.expr =
   let header e =
-    let defs =
-      [ (p_var n_buffer, e_ref e_empty_list)
-      ; ( p_var n_push
-        , e_fun @@ [p_var "e"]
-          ^-> e_assign_to_ref (e_var n_buffer)
-                (e_li_cons (e_var "e") (e_deref (e_var n_buffer))) ) ] in
+    let defs = [(p_var n_buffer, e_buffer_create (e_lit_int 16))] in
     e_open_module "Stdlib"
     @@
     if not (CCString.is_empty args.code) then
       e_fun ([p_prim args] ^-> e_let defs e)
     else e_let defs e in
-  let footer =
-    e_string_concat e_empty_string (e_list_rev (e_deref (e_var n_buffer))) in
+  let footer = e_buffer_contents (e_var n_buffer) in
   let ele_to_expr : elt -> Ocaml.mixed = function
-    | Text s -> mix_unit (e_push (e_lit_string s))
+    | Text s -> mix_unit (e_buffer_add_string (e_var n_buffer) (e_lit_string s))
     | Code s -> mix_prim s
     | Output {format; code; escape} ->
         let eescape = if escape then e_app_escape else Fun.id in
@@ -135,9 +102,10 @@ let compile_to_expr ((args, elements) : Template.t) : Ocaml.expr =
         mix_unit
           ( match type_ with
           | None ->
-              e_push (eescape @@ esprintf (e_lit_string format) [e_prim code])
+              e_buffer_add_string (e_var n_buffer)
+                (eescape @@ esprintf (e_lit_string format) [e_prim code])
           | Some type_ ->
-              e_push
+              e_buffer_add_string (e_var n_buffer)
                 ( eescape
                 @@ esprintf (e_lit_string format) [e_prim code ^: type_] ) )
   in
@@ -145,8 +113,7 @@ let compile_to_expr ((args, elements) : Template.t) : Ocaml.expr =
   header body
 
 let compile_to_string template =
-  Ocaml.Printer.expr_to_string
-    (e_let [p_var n_escape ^= eescape] @@ compile_to_expr template)
+  Ocaml.Printer.expr_to_string (compile_to_expr template)
 
 let compile_to_expr_continuation ((args, elements) : Template.t) : Ocaml.expr =
   let header e =
@@ -176,45 +143,62 @@ let compile ?(continuation_mode = false) name t =
   in
   (p_var name, compile t)
 
+let is_eml_file filename =
+  let extensions = filename |> String.split_on_char '.' |> List.rev in
+  match extensions with
+  | [] -> false
+  | "eml" :: _ -> true
+  | _ :: "eml" :: _ -> true
+  | _ -> false
+
+let eml_basename filename =
+  filename |> String.split_on_char '.' |> List.rev
+  |> (function
+       | [] -> assert false
+       | "eml" :: li -> li
+       | _ :: "eml" :: li -> li
+       | _ -> assert false )
+  |> List.rev |> String.concat "."
+
 let compile_folder ?(continuation_mode = false) folder_name =
   let directory =
-    read_file_or_directory
-      ~filter:(fun filename -> Filename.check_suffix filename ".eml")
-      ~sorted:true folder_name in
+    read_file_or_directory ~filter:is_eml_file ~sorted:true folder_name in
   let rec aux current_file =
     match current_file with
     | File filename -> (
-        let name = Filename.chop_extension filename in
+        let name = eml_basename filename in
         let function_name = Filename.basename name in
         match Template_builder.of_filename filename with
         | Template template ->
             let pat, expr = compile ~continuation_mode function_name template in
-            si_def (pat ^= expr)
+            Some (si_def (pat ^= expr))
         | Error lexbuf ->
             Template_builder.handle_syntax_error lexbuf ;
             exit 1 )
-    | Directory (name, files) ->
+    | Directory (name, files) -> (
         let module_name = String.capitalize_ascii (Filename.basename name) in
-        let struct_items = Array.to_list (Array.map aux files) in
-        let struct_items = Ocaml.Transform.force_mutual_recursion struct_items in
-        si_module @@ module_name ^= m_struct struct_items in
+        files |> Array.to_list |> List.filter_map aux
+        |> function
+        | [] -> None
+        | _ :: _ as struct_items ->
+            let struct_items =
+              Ocaml.Transform.force_mutual_recursion struct_items in
+            Some (si_module @@ module_name ^= m_struct struct_items) ) in
   match directory with
   | File _ ->
-      if Filename.check_suffix folder_name ".eml" then
-        let name = Filename.chop_extension folder_name ^ ".ml" in
+      if is_eml_file folder_name then
+        let name = eml_basename folder_name ^ ".ml" in
         match Template_builder.of_filename folder_name with
         | Template template ->
             let pattern, value = compile ~continuation_mode "render" template in
-            let defs =
-              [si_def (p_var n_escape ^= eescape); si_def (pattern ^= value)]
-            in
+            let defs = [si_def (pattern ^= value)] in
             CCIO.with_out name (fun chan ->
-                Ocaml.Printer.print_program chan defs)
+                Ocaml.Printer.print_program chan defs )
         | Error lexbuf -> Template_builder.handle_syntax_error lexbuf
       else assert false
-  | Directory (_, files) ->
-      let program =
-        si_def (p_var n_escape ^= eescape)
-        :: (Array.to_list @@ Array.map aux files) in
+  | Directory (name, files) ->
+      if files = [||] then
+        Error.fail "Error : directory `%s` does not contain eml files" name ;
+      let program = files |> Array.to_list |> List.filter_map aux in
       CCIO.with_out (folder_name ^ ".ml") (fun chan ->
-          Ocaml.Printer.print_program chan program)
+          Ocaml.Printer.print_program chan program )
