@@ -29,7 +29,7 @@ url {
   src:
     "https://github.com/EmileTrotignon/embedded_ocaml_templates/archive/0.6.tar.gz"
   checksum: [
-    "md5=2b99e2c811ced830da77bb7ae1aa2527"
-    "sha512=9c1bf7def98f43bda97b19e0120ac675e527abdb1cb5dc72c15c372127be2e3e60562acdf811cacf6eac2489a52c0369dfe5e20e8fe417fc278488aa5f1eca41"
+    "md5=c262b84b429163b6441e76554db18104"
+    "sha512=018abfb99112e355153ff00ecb5199921f01cd1311bc0943c54cba172fe66be72153f69433c3a3b440fecca02ca8be573b59b6419f4329e70dff6b2b67c66f7a"
   ]
 }
