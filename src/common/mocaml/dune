@@ -1,0 +1,4 @@
+(library
+ (name mocaml)
+ (package embedded_ocaml_templates)
+ (libraries pprint compiler-libs.common))
