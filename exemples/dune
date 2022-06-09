@@ -10,11 +10,3 @@
   (source_tree templates))
  (action
   (run eml_compiler -continuation templates)))
-
-(rule
- (alias test)
- (target empty.ml)
- (deps
-  (source_tree empty))
- (action
-  (run eml_compiler -continuation empty)))
