@@ -1,17 +1,20 @@
+module Prim = Mocaml.Primitive
+
+
 type elt =
   | Text of string
-  | Code of Ocaml.Primitive.t
-  | Output of {code: Ocaml.Primitive.t; escape: bool; format: string option}
+  | Code of Prim.t
+  | Output of {code: Prim.t; escape: bool; format: string option}
 
-type t = Ocaml.Primitive.t * elt list
+type t = Prim.t * elt list
 type tag_options = {slurp_before: bool; slurp_after: bool}
 
 type tag =
-  | Code of Ocaml.Primitive.t
-  | Output of {code: Ocaml.Primitive.t; escape: bool; format: string option}
+  | Code of Prim.t
+  | Output of {code: Prim.t; escape: bool; format: string option}
 
 type elt' = Text of string | Whitespace of string | Tag of tag_options * tag
-type t' = Ocaml.Primitive.t * elt' list
+type t' = Prim.t * elt' list
 
 let elt_of_tag (tag : tag) : elt =
   match tag with
@@ -41,7 +44,6 @@ let t_of_t' (args, elts) =
         | Whitespace s -> Text s )
       elts' )
 
-module Prim = Ocaml.Primitive
 
 let text s : elt = Text s
 let text' s : elt' = Text s

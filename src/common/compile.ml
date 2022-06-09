@@ -1,23 +1,31 @@
 open Template
 open File_handling
-open Ocaml.Builder
-open Ocaml.Primitive
+open Mocaml.Builder
+module Prim = Mocaml.Primitive
 
 let prefix s = "__eml_" ^ s
-let e_escape = e_module_field ["EML_runtime"; "escape"]
+
+let e_escape = E.module_field ["EML_runtime"; "escape"]
+
 let n_buffer = prefix "buffer"
+
 let n_continuation = prefix "continuation"
-let e_app_continuation e = e_app (e_var n_continuation) [e]
+
+let e_app_continuation e = E.(apply (var n_continuation) [e])
+
+let stdlib_module_field fi = E.module_field ("Stdlib" :: fi)
 
 (** Takes an expression representing an integer [n] and allocate a buffer of size [n] *)
-let e_buffer_create e = e_app (e_module_field ["Buffer"; "create"]) [e]
+let e_buffer_create e = E.apply (stdlib_module_field ["Buffer"; "create"]) [e]
 
 (** add_string b s appends the string s at the end of buffer b. *)
 let e_buffer_add_string buf s =
-  e_app (e_module_field ["Buffer"; "add_string"]) [buf; s]
+  E.apply (stdlib_module_field ["Buffer"; "add_string"]) [buf; s]
 
-let e_buffer_contents buf = e_app (e_module_field ["Buffer"; "contents"]) [buf]
-let e_app_escape e = e_app e_escape [e]
+let e_buffer_contents buf =
+  E.apply (stdlib_module_field ["Buffer"; "contents"]) [buf]
+
+let e_app_escape e = E.apply e_escape [e]
 
 (* d, i: convert an integer argument to signed decimal.
    u, n, l, L, or N: convert an integer argument to unsigned decimal. Warning: n, l, L, and N are used for scanf, and should not be used for printf.
@@ -54,115 +62,143 @@ let e_app_escape e = e_app e_escape [e]
    ,: take no argument and output nothing: a no-op delimiter for conversion specifications
 *)
 
-let type_of_format = function
-  | "d" | "i" | "u" | "n" | "L" | "N" | "x" | "X" | "o" -> Some (t_name "int")
-  | "s" | "S" -> Some (t_name "string")
-  | "c" | "C" -> Some (t_name "char")
-  | "f" | "F" | "e" | "E" | "g" | "G" | "h" | "H" -> Some (t_name "float")
-  | "B" | "b" -> Some (t_name "bool")
-  | "nd" | "ni" | "nu" | "nx" | "nX" | "no" -> Some (t_name "nativeint")
-  | "Ld" | "Li" | "Lu" | "Lx" | "LX" | "Lo" -> Some (t_name "int64")
-  | "t" -> Some (t_arrow ([t_name "unit"] ^-> t_name "string"))
-  | _ -> None
+let type_of_format =
+  T.(
+    function
+    | "d" | "i" | "u" | "n" | "L" | "N" | "x" | "X" | "o" ->
+        Some int
+    | "s" | "S" ->
+        Some string
+    | "c" | "C" ->
+        Some char
+    | "f" | "F" | "e" | "E" | "g" | "G" | "h" | "H" ->
+        Some float
+    | "B" | "b" ->
+        Some bool
+    | "nd" | "ni" | "nu" | "nx" | "nX" | "no" ->
+        Some nativeint
+    | "Ld" | "Li" | "Lu" | "Lx" | "LX" | "Lo" ->
+        Some int64
+    | "t" ->
+        Some (unit ^-> string)
+    | _ ->
+        None)
 
 (* for reference *)
 let _escape s =
   let buffer = Buffer.create (String.length s) in
   String.iter
     (function
-      | '&' -> Buffer.add_string buffer "&amp;"
-      | '<' -> Buffer.add_string buffer "&lt;"
-      | '>' -> Buffer.add_string buffer "&gt;"
-      | '"' -> Buffer.add_string buffer "&quot;"
-      | '\'' -> Buffer.add_string buffer "&#x27;"
-      | c -> Buffer.add_char buffer c )
+      | '&' ->
+          Buffer.add_string buffer "&amp;"
+      | '<' ->
+          Buffer.add_string buffer "&lt;"
+      | '>' ->
+          Buffer.add_string buffer "&gt;"
+      | '"' ->
+          Buffer.add_string buffer "&quot;"
+      | '\'' ->
+          Buffer.add_string buffer "&#x27;"
+      | c ->
+          Buffer.add_char buffer c )
     s ;
   Buffer.contents buffer
 
 let esprintf format args =
-  e_app (e_module_field ["Printf"; "sprintf"]) (format :: args)
+  E.apply (stdlib_module_field ["Printf"; "sprintf"]) (format :: args)
 
-let compile_to_expr ((args, elements) : Template.t) : Ocaml.expr =
+let compile_to_expr ((args, elements) : Template.t) : Mocaml.expr =
   let header e =
-    let defs = [(p_var n_buffer, e_buffer_create (e_lit_int 16))] in
-    e_open_module "Stdlib"
-    @@
-    if not (CCString.is_empty args.code) then
-      e_fun ([p_prim args] ^-> e_let defs e)
-    else e_let defs e in
-  let footer = e_buffer_contents (e_var n_buffer) in
-  let ele_to_expr : elt -> Ocaml.mixed = function
-    | Text s -> mix_unit (e_buffer_add_string (e_var n_buffer) (e_lit_string s))
-    | Code s -> mix_prim s
+    let defs = [(P.var n_buffer, e_buffer_create (E.lit_int 16))] in
+    if not (Prim.is_empty args) then E.fun_ ([P.prim args] ^^-> E.let_ defs e)
+    else E.let_ defs e
+  in
+  let footer = e_buffer_contents (E.var n_buffer) in
+  let ele_to_expr : elt -> Mocaml.mixed = function
+    | Text s ->
+        Mixed.unit E.(e_buffer_add_string (var n_buffer) (lit_string s))
+    | Code s ->
+        Mixed.prim s
     | Output {format; code; escape} ->
         let eescape = if escape then e_app_escape else Fun.id in
         let format = Option.value ~default:"s" format in
         let type_ = type_of_format format in
         let format = "%" ^ format in
-        mix_unit
-          ( match type_ with
-          | None ->
-              e_buffer_add_string (e_var n_buffer)
-                (eescape @@ esprintf (e_lit_string format) [e_prim code])
-          | Some type_ ->
-              e_buffer_add_string (e_var n_buffer)
-                ( eescape
-                @@ esprintf (e_lit_string format) [e_prim code ^: type_] ) )
+        Mixed.unit
+          E.(
+            match type_ with
+            | None ->
+                e_buffer_add_string (var n_buffer)
+                  (eescape @@ esprintf (lit_string format) [prim code])
+            | Some type_ ->
+                e_buffer_add_string (var n_buffer)
+                  (eescape @@ esprintf (lit_string format) [prim code ^: type_]))
   in
-  let body = e_mixed_seq (List.map ele_to_expr elements) footer in
+  let body = E.(mixed_seq (List.map ele_to_expr elements) footer) in
   header body
 
 let compile_to_string template =
-  Ocaml.Printer.expr_to_string (compile_to_expr template)
+  Mocaml.Printer.expr_to_string (compile_to_expr template)
 
-let compile_to_expr_continuation ((args, elements) : Template.t) : Ocaml.expr =
-  let header e =
-    e_open_module "Stdlib" (e_fun @@ [p_prim args; p_var n_continuation] ^-> e)
-  in
-  let ele_to_expr : elt -> Ocaml.mixed = function
-    | Text s -> mix_unit (e_app_continuation (e_lit_string s))
-    | Code s -> mix_prim s
+let compile_to_expr_continuation ((args, elements) : Template.t) : Mocaml.expr =
+  let header e = E.fun_ @@ P.[prim args; var n_continuation] ^^-> e in
+  let ele_to_expr : elt -> Mocaml.mixed = function
+    | Text s ->
+        Mixed.unit E.(e_app_continuation (lit_string s))
+    | Code s ->
+        Mixed.prim s
     | Output {format; code; escape} ->
         let eescape = if escape then e_app_escape else Fun.id in
         let format = Option.value ~default:"s" format in
         let type_ = type_of_format format in
         let format = "%" ^ format in
-        mix_unit
-          ( match type_ with
-          | None ->
-              e_app_continuation @@ eescape
-              @@ esprintf (e_lit_string format) [e_prim code]
-          | Some type_ ->
-              e_app_continuation @@ eescape
-              @@ esprintf (e_lit_string format) [e_prim code ^: type_] ) in
-  header @@ e_mixed_seq (List.map ele_to_expr elements) e_unit
+        Mixed.unit
+          E.(
+            match type_ with
+            | None ->
+                e_app_continuation @@ eescape
+                @@ esprintf (lit_string format) [prim code]
+            | Some type_ ->
+                e_app_continuation @@ eescape
+                @@ esprintf (lit_string format) [prim code ^: type_])
+  in
+  header @@ E.(mixed_seq (List.map ele_to_expr elements) unit)
 
 let compile ?(continuation_mode = false) name t =
   let compile =
     if continuation_mode then compile_to_expr_continuation else compile_to_expr
   in
-  (p_var name, compile t)
+  (P.var name, compile t)
 
 let is_eml_file filename =
   let extensions = filename |> String.split_on_char '.' |> List.rev in
   match extensions with
-  | [] -> false
-  | "eml" :: _ -> true
-  | _ :: "eml" :: _ -> true
-  | _ -> false
+  | [] ->
+      false
+  | "eml" :: _ ->
+      true
+  | _ :: "eml" :: _ ->
+      true
+  | _ ->
+      false
 
 let eml_basename filename =
   filename |> String.split_on_char '.' |> List.rev
   |> (function
-       | [] -> assert false
-       | "eml" :: li -> li
-       | _ :: "eml" :: li -> li
-       | _ -> assert false )
+       | [] ->
+           assert false
+       | "eml" :: li ->
+           li
+       | _ :: "eml" :: li ->
+           li
+       | _ ->
+           assert false )
   |> List.rev |> String.concat "."
 
 let compile_folder ?(continuation_mode = false) folder_name =
   let directory =
-    read_file_or_directory ~filter:is_eml_file ~sorted:true folder_name in
+    read_file_or_directory ~filter:is_eml_file ~sorted:true folder_name
+  in
   let rec aux current_file =
     match current_file with
     | File filename -> (
@@ -171,7 +207,7 @@ let compile_folder ?(continuation_mode = false) folder_name =
         match Template_builder.of_filename filename with
         | Template template ->
             let pat, expr = compile ~continuation_mode function_name template in
-            Some (si_def (pat ^= expr))
+            Some (SI.def (pat ^= expr))
         | Error lexbuf ->
             Template_builder.handle_syntax_error lexbuf ;
             exit 1 )
@@ -179,11 +215,14 @@ let compile_folder ?(continuation_mode = false) folder_name =
         let module_name = String.capitalize_ascii (Filename.basename name) in
         files |> Array.to_list |> List.filter_map aux
         |> function
-        | [] -> None
+        | [] ->
+            None
         | _ :: _ as struct_items ->
             let struct_items =
-              Ocaml.Transform.force_mutual_recursion struct_items in
-            Some (si_module @@ module_name ^= m_struct struct_items) ) in
+              Mocaml.Transform.force_mutual_recursion struct_items
+            in
+            Some (SI.module_ @@ module_name ^= M.struct_ struct_items) )
+  in
   match directory with
   | File _ ->
       if is_eml_file folder_name then
@@ -191,14 +230,15 @@ let compile_folder ?(continuation_mode = false) folder_name =
         match Template_builder.of_filename folder_name with
         | Template template ->
             let pattern, value = compile ~continuation_mode "render" template in
-            let defs = [si_def (pattern ^= value)] in
+            let defs = [SI.def (pattern ^= value)] in
             CCIO.with_out name (fun chan ->
-                Ocaml.Printer.print_program chan defs )
-        | Error lexbuf -> Template_builder.handle_syntax_error lexbuf
+                Mocaml.Printer.print_program chan defs )
+        | Error lexbuf ->
+            Template_builder.handle_syntax_error lexbuf
       else assert false
   | Directory (name, files) ->
       if files = [||] then
         Error.fail "Error : directory `%s` does not contain eml files" name ;
       let program = files |> Array.to_list |> List.filter_map aux in
       CCIO.with_out (folder_name ^ ".ml") (fun chan ->
-          Ocaml.Printer.print_program chan program )
+          Mocaml.Printer.print_program chan program )

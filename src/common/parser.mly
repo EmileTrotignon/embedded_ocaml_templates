@@ -5,7 +5,7 @@
   let string_of_string_option o =
     match o with
     | Some s -> s
-    | None -> Ocaml.Primitive.with_dummy_pos ""
+    | None -> Mocaml.Primitive.with_dummy_pos ""
   let soso = string_of_string_option
 
 
@@ -25,7 +25,7 @@
 %%
 
 %inline located(X):
-  x=X { Ocaml.Primitive.build x $startpos $endpos }
+  x=X { Mocaml.Primitive.build x $startpos $endpos }
 
 %inline text_of_lpar:
 | slurp=LPar { if slurp then "<_%" else "<%"  }
