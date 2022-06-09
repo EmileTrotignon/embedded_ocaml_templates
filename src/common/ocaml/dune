@@ -1,4 +1,0 @@
-(library
- (name ocaml)
- (package embedded_ocaml_templates)
- (libraries pprint))
