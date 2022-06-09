@@ -106,9 +106,6 @@ There is also this nice new syntax that available from OCaml 4.11 onward :
 let user name age = {%eml|name:<%-name%>, age:<%i- age%>|}
 ```
 
-The ppx may be a bit slow at compile time, because I actually call the OCaml
-parser on generated code to build it. This has the advantage to be most likely
-compatible with future versions of OCaml, but I think it may be better to do it
-with some more standard tools such as metaquot.
-
-Unfortunately, I have not managed to make the ppx positions correct.
+Unfortunately, I have not managed to make the ppx positions correct, and it
+seems to me that this not possible without breaking compatibility with older
+OCaml versions. This means that errors will show up in weird positions.
