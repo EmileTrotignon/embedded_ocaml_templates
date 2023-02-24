@@ -6,7 +6,3 @@
  (preprocess
   (pps sedlex.ppx ppx_inline_test))
  (flags :standard -w +39))
-
-(menhir
- (flags --table --canonical)
- (modules parser))

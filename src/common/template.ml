@@ -6,7 +6,7 @@ type elt =
   | Code of Prim.t
   | Output of {code: Prim.t; escape: bool; format: string option}
 
-type t = Prim.t * elt list
+type t = Prim.t option * elt list
 type tag_options = {slurp_before: bool; slurp_after: bool}
 
 type tag =
@@ -14,7 +14,7 @@ type tag =
   | Output of {code: Prim.t; escape: bool; format: string option}
 
 type elt' = Text of string | Whitespace of string | Tag of tag_options * tag
-type t' = Prim.t * elt' list
+type t' = Prim.t option * elt' list
 
 let elt_of_tag (tag : tag) : elt =
   match tag with

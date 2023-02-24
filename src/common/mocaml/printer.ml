@@ -50,16 +50,12 @@ let position p =
             ; ("pos_bol", OCaml.int p.pos_bol)
             ; ("pos_cnum", OCaml.int p.pos_cnum) ] )
     ^^ !^"\n" ^^ sharp ^-^ OCaml.int p.pos_lnum ^-^ OCaml.string p.pos_fname
-    ^^ !^"\n")
+    ^^ !^"\n" )
 
 let primitive = function
   | Primitive.(Textual {code; startpos; endpos= _}) ->
       let cnum = startpos.pos_cnum - startpos.pos_bol in
-      comment
-        ( !^"cnum =" ^-^ OCaml.int cnum ^^ !^" ; pos_cnum="
-        ^^ OCaml.int startpos.pos_cnum
-        ^^ !^" ; pos_bol=" ^^ OCaml.int startpos.pos_bol )
-      ^^ position startpos ^^ repeat cnum space ^^ !^code ^^ nl
+      position startpos ^^ repeat cnum space ^^ !^code ^^ nl
   | Parsed expr ->
       Pprintast.expression Format.str_formatter expr ;
       let str = Format.flush_str_formatter () in

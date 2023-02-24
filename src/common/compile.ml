@@ -82,7 +82,7 @@ let type_of_format =
     | "t" ->
         Some (unit ^-> string)
     | _ ->
-        None)
+        None )
 
 (* for reference *)
 let _escape s =
@@ -110,8 +110,11 @@ let esprintf format args =
 let compile_to_expr ((args, elements) : Template.t) : Mocaml.expr =
   let header e =
     let defs = [(P.var n_buffer, e_buffer_create (E.lit_int 16))] in
-    if not (Prim.is_empty args) then E.fun_ ([P.prim args] ^^-> E.let_ defs e)
-    else E.let_ defs e
+    match args with
+    | Some args ->
+        E.fun_ ([P.prim args] ^^-> E.let_ defs e)
+    | None ->
+        E.let_ defs e
   in
   let footer = e_buffer_contents (E.var n_buffer) in
   let ele_to_expr : elt -> Mocaml.mixed = function
@@ -132,7 +135,7 @@ let compile_to_expr ((args, elements) : Template.t) : Mocaml.expr =
                   (eescape @@ esprintf (lit_string format) [prim code])
             | Some type_ ->
                 e_buffer_add_string (var n_buffer)
-                  (eescape @@ esprintf (lit_string format) [prim code ^: type_]))
+                  (eescape @@ esprintf (lit_string format) [prim code ^: type_]) )
   in
   let body = E.(mixed_seq (List.map ele_to_expr elements) footer) in
   header body
@@ -141,7 +144,8 @@ let compile_to_string template =
   Mocaml.Printer.expr_to_string (compile_to_expr template)
 
 let compile_to_expr_continuation ((args, elements) : Template.t) : Mocaml.expr =
-  let header e = E.fun_ @@ P.[prim args; var n_continuation] ^^-> e in
+  let args = match args with Some args -> P.[prim args] | None -> [] in
+  let header e = E.fun_ @@ P.(args @ [var n_continuation]) ^^-> e in
   let ele_to_expr : elt -> Mocaml.mixed = function
     | Text s ->
         Mixed.unit E.(e_app_continuation (lit_string s))
@@ -160,7 +164,7 @@ let compile_to_expr_continuation ((args, elements) : Template.t) : Mocaml.expr =
                 @@ esprintf (lit_string format) [prim code]
             | Some type_ ->
                 e_app_continuation @@ eescape
-                @@ esprintf (lit_string format) [prim code ^: type_])
+                @@ esprintf (lit_string format) [prim code ^: type_] )
   in
   header @@ E.(mixed_seq (List.map ele_to_expr elements) unit)
 
@@ -205,11 +209,11 @@ let compile_folder ?(continuation_mode = false) folder_name =
         let name = eml_basename filename in
         let function_name = Filename.basename name in
         match Template_builder.of_filename filename with
-        | Template template ->
+        | Ok template ->
             let pat, expr = compile ~continuation_mode function_name template in
             Some (SI.def (pat ^= expr))
-        | Error lexbuf ->
-            Template_builder.handle_syntax_error lexbuf ;
+        | Error e ->
+            Lexer.pp_error Format.err_formatter e ;
             exit 1 )
     | Directory (name, files) -> (
         let module_name = String.capitalize_ascii (Filename.basename name) in
@@ -228,13 +232,13 @@ let compile_folder ?(continuation_mode = false) folder_name =
       if is_eml_file folder_name then
         let name = eml_basename folder_name ^ ".ml" in
         match Template_builder.of_filename folder_name with
-        | Template template ->
+        | Ok template ->
             let pattern, value = compile ~continuation_mode "render" template in
             let defs = [SI.def (pattern ^= value)] in
             CCIO.with_out name (fun chan ->
                 Mocaml.Printer.print_program chan defs )
-        | Error lexbuf ->
-            Template_builder.handle_syntax_error lexbuf
+        | Error e ->
+            Lexer.pp_error Format.err_formatter e
       else assert false
   | Directory (name, files) ->
       if files = [||] then
