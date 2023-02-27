@@ -1,0 +1,7 @@
+(env
+ (eml_compiler
+  (binaries
+   (../odoc_print/odoc_print.exe as eml_compiler))))
+
+(cram
+ (deps %{bin:eml_compiler}))
