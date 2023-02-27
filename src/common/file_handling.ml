@@ -5,7 +5,8 @@ let sort_by_int array ~to_int =
 
 let rec print_file file =
   match file with
-  | File f -> Printf.printf "File %s\n" f
+  | File f ->
+      Printf.printf "File %s\n" f
   | Directory (s, fa) ->
       Printf.printf "File %s (\n" s ;
       ArrayLabels.iter fa ~f:print_file ;
@@ -20,7 +21,8 @@ let rec read_file_or_directory ?(filter = fun _ -> true) ?(sorted = false)
     Error.fail "file or directory `%s` does not exist" filename ;
   let directories_first_sort files =
     sort_by_int files ~to_int:(fun f ->
-        match f with Directory _ -> 0 | File _ -> 1 ) in
+        match f with Directory _ -> 0 | File _ -> 1 )
+  in
   match Sys.is_directory filename with
   | true ->
       Directory
@@ -29,20 +31,24 @@ let rec read_file_or_directory ?(filter = fun _ -> true) ?(sorted = false)
             ArrayLabels.map
               ~f:(fun file ->
                 match file with
-                | File name -> File name
-                | Directory (name, files) -> Directory (name, files) )
+                | File name ->
+                    File name
+                | Directory (name, files) ->
+                    Directory (name, files) )
               (CCArrayLabels.filter
                  ~f:(fun file ->
                    match file with File s -> filter s | Directory _ -> true )
                  (ArrayLabels.map
                     ~f:(read_file_or_directory ~filter ~sorted)
                     (ArrayLabels.map ~f:(Filename.concat filename)
-                       (Sys.readdir filename) ) ) ) in
+                       (Sys.readdir filename) ) ) )
+          in
           if sorted then directories_first_sort files ;
           files )
   | false -> (
     match Sys.file_exists filename with
-    | true -> File filename
+    | true ->
+        File filename
     | false ->
         Printf.eprintf "Unknown file %s\n" filename ;
         exit 1 )

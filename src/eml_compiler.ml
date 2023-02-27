@@ -1,6 +1,7 @@
 open Common
 
 let continuation_mode = ref false
+
 let filename = ref None
 
 let args =
@@ -27,10 +28,12 @@ let () =
   Arg.parse args (fun s -> filename := Some s) usage ;
   let filename =
     match !filename with
-    | Some s -> s
+    | Some s ->
+        s
     | None ->
         prerr_endline "Missing required argument FILENAME" ;
         prerr_endline "For usage, run eml_compiler -help" ;
-        exit 1 in
+        exit 1
+  in
   let continuation_mode = !continuation_mode in
   Compile.compile_folder ~continuation_mode filename

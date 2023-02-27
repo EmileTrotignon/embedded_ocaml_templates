@@ -4,7 +4,7 @@ type t = Uchar.t array
 
 let to_buffer ustring =
   let buffer = Buffer.create (Array.length ustring) in
-  Array.iter (Uutf.Buffer.add_utf_8 buffer) ustring;
+  Array.iter (Uutf.Buffer.add_utf_8 buffer) ustring ;
   buffer
 
 let print ustring = print_string (Buffer.contents (to_buffer ustring))
@@ -15,15 +15,15 @@ let of_string string =
   let buffer = CCVector.create () in
   let rec aux () =
     match Uutf.decode decoder with
-    | `Await -> assert false
+    | `Await ->
+        assert false
     | `Uchar u ->
-        CCVector.push buffer u;
-        aux ()
-    | `End -> ()
+        CCVector.push buffer u ; aux ()
+    | `End ->
+        ()
     | `Malformed string ->
         Printf.ksprintf failwith "Malformed input : %s" string
   in
-  aux ();
-  CCVector.to_array buffer
+  aux () ; CCVector.to_array buffer
 
 let to_string ustring = Buffer.contents (to_buffer ustring)
