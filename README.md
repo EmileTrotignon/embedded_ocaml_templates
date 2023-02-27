@@ -1,14 +1,20 @@
 # Embedded Ocaml Templates
 
 EML is a simple templating language that lets you generate text with plain OCaml.
+It is analogous to the way you would write PHP pages, but the langage being 
+Ocaml instead.
+
 The syntax is as follow :
 
-First of all, you need to declare the template's arguments at the top of the
+First of all, you can declare the template's arguments at the top of the
 template :
 
 ```eml
 <%# arg1 (arg2:type) (arg3_1, arg3_2) %>
 ```
+
+This is optionnal, but this is the way to get ocaml values from the outside. You
+could also link a library that exposes the values.
 
 Then you can use two tags :
 
@@ -106,6 +112,3 @@ There is also this nice new syntax that available from OCaml 4.11 onward :
 let user name age = {%eml|name:<%-name%>, age:<%i- age%>|}
 ```
 
-Unfortunately, I have not managed to make the ppx positions correct, and it
-seems to me that this not possible without breaking compatibility with older
-OCaml versions. This means that errors will show up in weird positions.
