@@ -15,6 +15,7 @@
 
 (package
  (name embedded_ocaml_templates)
+ (license MIT)
  (synopsis
   "EML is a simple templating language that lets you generate text with plain OCaml")
  (description
