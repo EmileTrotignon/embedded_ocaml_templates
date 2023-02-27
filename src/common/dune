@@ -1,7 +1,7 @@
 (library
  (name common)
  (package embedded_ocaml_templates)
- (libraries sedlex uutf menhirLib ppxlib containers pprint mocaml)
+ (libraries sedlex uutf ppxlib containers pprint mocaml)
  (inline_tests)
  (preprocess
   (pps sedlex.ppx ppx_inline_test))
