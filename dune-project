@@ -28,6 +28,6 @@
   uutf
   pprint
   (ppxlib
-   (>= 0.8.0))
+   (>= 0.18.0))
   containers
   ppx_inline_test))
