@@ -4,4 +4,5 @@
    (../odoc_print/odoc_print.exe as eml_compiler))))
 
 (cram
- (deps %{bin:eml_compiler}))
+ (deps %{bin:eml_compiler})
+ (enabled_if (>= %{ocaml_version} 4.11.0)))

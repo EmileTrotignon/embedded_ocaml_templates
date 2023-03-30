@@ -3,5 +3,3 @@
  (libraries embedded_ocaml_templates.EML_runtime)
  (preprocess
   (pps embedded_ocaml_templates.ppx_eml)))
-
-(data_only_dirs *.t)

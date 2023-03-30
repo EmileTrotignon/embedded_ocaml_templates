@@ -23,8 +23,6 @@
  (depends
   (ocaml
    (>= 4.08.0))
-  (dune
-   (>= 2.8.0))
   (sedlex
    (>= 2.0))
   uutf

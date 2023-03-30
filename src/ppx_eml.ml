@@ -11,8 +11,6 @@ let name = "eml"
 
 let expand ~loc:_ ~path:_ (s : string) loc _delim =
   let startpos = loc.loc_start in
-  (* Printf.printf "Position ppx : line %i char %i\n" startpos.pos_lnum
-     (startpos.pos_cnum - startpos.pos_bol) ; *)
   (* let startpos = {loc.loc_start with pos_lnum= loc.loc_start.pos_lnum - 1} in *)
   match Common.Template_builder.of_string ~startpos s with
   | Error e ->
