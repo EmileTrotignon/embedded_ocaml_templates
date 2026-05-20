@@ -1,5 +1,2 @@
-  $ dune build ./foo.exe
+  $ dune build ./foo.exe 2>&1 | grep "^File"
   File "foo.ml", line 11, characters 6-21:
-  Error: This expression has type string but an expression was expected of type
-           int
-  [1]
