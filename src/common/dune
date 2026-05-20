@@ -2,7 +2,6 @@
  (name common)
  (package embedded_ocaml_templates)
  (libraries sedlex uutf ppxlib containers pprint mocaml)
- (inline_tests)
  (preprocess
-  (pps sedlex.ppx ppx_inline_test))
+  (pps sedlex.ppx))
  (flags :standard -w +39))

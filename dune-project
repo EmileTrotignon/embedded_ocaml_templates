@@ -30,4 +30,4 @@
   (ppxlib
    (>= 0.18.0))
   containers
-  ppx_inline_test))
+  (ppx_inline_test :with-test)))
