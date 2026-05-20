@@ -1,4 +1,4 @@
-(lang dune 3.6)
+(lang dune 3.18)
 
 (name embedded_ocaml_templates)
 
@@ -30,4 +30,5 @@
   (ppxlib
    (>= 0.18.0))
   containers
-  (ppx_inline_test :with-test)))
+  (ppx_inline_test :with-test))
+ (maintenance_intent latest))

@@ -11,7 +11,7 @@ homepage: "https://github.com/EmileTrotignon/embedded_ocaml_templates"
 bug-reports:
   "https://github.com/EmileTrotignon/embedded_ocaml_templates/issues"
 depends: [
-  "dune" {>= "3.6"}
+  "dune" {>= "3.18"}
   "ocaml" {>= "4.08.0"}
   "sedlex" {>= "2.0"}
   "uutf"
@@ -37,3 +37,4 @@ build: [
 ]
 dev-repo:
   "git+https://github.com/EmileTrotignon/embedded_ocaml_templates.git"
+x-maintenance-intent: ["latest"]
